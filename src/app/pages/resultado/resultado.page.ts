@@ -249,8 +249,8 @@ export class ResultadoPage implements OnInit {
       this.infija = this.replaceAll(this.infija, "¬", "!");
     }
 
-    this.infija = this.infija.replace('[', '(');
-    this.infija = this.infija.replace(']', ')');
+    this.infija = this.replaceAll(this.infija, '[', '(');
+    this.infija = this.replaceAll(this.infija, ']', ')');
 
     this.clearMem();
 
