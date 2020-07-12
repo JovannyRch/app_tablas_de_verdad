@@ -67,7 +67,7 @@ export class ResultadoPage implements OnInit {
   infija: string = "";
   infijaOrg: string = "";
   infijaAux: string = "";
-
+  diccionarioOperaciones = {};
   variables: string[] = [];
   operadores: string = "!&|()⇔⇒⊼⊻↓⊕";
   opr2var: string = "|&⇔⇒⊼⊻↓⊕";
@@ -88,6 +88,7 @@ export class ResultadoPage implements OnInit {
     "or": { 1: "|", 2: "∨" },
     "not": { 1: "!", 2: "¬" },
   }
+
 
   verGuardadas: boolean = false;
   mostrarProceso: boolean = false;
@@ -190,7 +191,7 @@ export class ResultadoPage implements OnInit {
     this.clearMem();
     this.infija = e + '';
     this.setModo(this.infija);
-    this.toPostfix();
+    // this.toPostfix();
     this.verGuardadas = false;
     this.ok = true;
   }
@@ -243,11 +244,11 @@ export class ResultadoPage implements OnInit {
     this.infijaOrg = this.infija;
 
 
-    if (this.modo == 2) {
-      this.infija = this.replaceAll(this.infija, "∧", "&");
-      this.infija = this.replaceAll(this.infija, "∨", "|");
-      this.infija = this.replaceAll(this.infija, "¬", "!");
-    }
+    /*  if (this.modo == 2) {
+       this.infija = this.replaceAll(this.infija, "∧", "&");
+       this.infija = this.replaceAll(this.infija, "∨", "|");
+       this.infija = this.replaceAll(this.infija, "¬", "!");
+     } */
 
     this.infija = this.replaceAll(this.infija, '[', '(');
     this.infija = this.replaceAll(this.infija, ']', ')');
@@ -337,12 +338,15 @@ export class ResultadoPage implements OnInit {
     let pila = [];
     this.proceso = [];
     for (const c of postfija) {
+      let cantidadOpers = 1;
       let oper = "";
+      let b;
       if (this.operadores.includes(c)) {
         // Evaluar
         let a = pila.pop();
         if (this.opr2var.includes(c)) {
-          let b = pila.pop();
+          cantidadOpers = 2;
+          b = pila.pop();
           let operator = this.opr2var[this.opr2var.indexOf(c)];
           oper = b + operator + a;
         }
@@ -359,11 +363,29 @@ export class ResultadoPage implements OnInit {
         else {
           pila.push(oper);
         }
-        this.proceso.push({ exp: oper, tabla: [] });
+        if (!this.diccionarioOperaciones[a]) {
+          this.diccionarioOperaciones[a] = [];
+        }
+
+        if (!this.diccionarioOperaciones[b]) {
+          this.diccionarioOperaciones[b] = [];
+        }
+
+        if (!this.diccionarioOperaciones[oper]) {
+          this.diccionarioOperaciones[oper] = [];
+        }
+
+
+        if (cantidadOpers === 2) {
+          this.proceso.push({ operandos: [a, b], exp: oper, tabla: [] });
+        } else {
+          this.proceso.push({ operandos: [a], exp: oper, tabla: [] });
+        }
       } else {
         pila.push(c);
       }
     }
+    //console.log(this.proceso);
   }
 
 
@@ -371,6 +393,9 @@ export class ResultadoPage implements OnInit {
 
   generarTabla() {
     this.tabla = [];
+    this.getProceso(this.postfija);
+    console.log("Diccionario de operaciones");
+    console.log(this.diccionarioOperaciones);
     for (const caracter of this.postfija) {
       if (!this.operadores.includes(caracter) && !this.variables.includes(caracter)) {
         this.variables.push(caracter);
@@ -378,12 +403,13 @@ export class ResultadoPage implements OnInit {
     }
     this.variables = this.variables.sort();
     let nCombinaciones = Math.pow(2, this.variables.length);
-    this.getProceso(this.postfija);
+
     let cant0 = 0;
     let cant1 = 0;
     for (let i = nCombinaciones - 1; i >= 0; i--) {
       let combinacion = this.nBits(i.toString(2), this.variables.length)
       let susChida = this.sustituir(combinacion, this.postfija);
+      console.log(susChida);
       let resultado = this.evaluar(susChida);
       if (resultado == 1) {
         cant1 += 1;
@@ -408,11 +434,11 @@ export class ResultadoPage implements OnInit {
       this.diagnostico = "Contingencia";
     }
 
-    if (this.modo == 2) {
-      this.infija = this.replaceAll(this.infija, "&", "∧");
-      this.infija = this.replaceAll(this.infija, "|", "∨");
-      this.infija = this.replaceAll(this.infija, "!", "¬");
-    }
+    /*  if (this.modo == 2) {
+       this.infija = this.replaceAll(this.infija, "&", "∧");
+       this.infija = this.replaceAll(this.infija, "|", "∨");
+       this.infija = this.replaceAll(this.infija, "!", "¬");
+     } */
     this.infija = this.infijaOrg;
 
 
@@ -449,7 +475,29 @@ export class ResultadoPage implements OnInit {
         let resultado;
         if (this.opr2var.includes(c)) {
           let b = parseInt(pila.pop());
-          switch (c) {
+          if (["|", "∨"].includes(c)) {
+            resultado = this.or(b, a);
+          }
+          else if (["&", "∧"].includes(c)) {
+            resultado = this.and(b, a);
+          }
+          else if ("=>" === c) {
+            resultado = this.condicional(b, a);
+          }
+          else if (["⇔"].includes(c)) {
+            resultado = this.bicondicional(b, a);
+          }
+          else if (["↓"].includes(c)) {
+            resultado = this.nor(b, a);
+          }
+          else if (["⊼"].includes(c)) {
+            resultado = this.nand(b, a);
+          }
+
+          else if (["⊻", "⊕"].includes(c)) {
+            resultado = this.xor(b, a);
+          }
+          /* switch (c) {
             case "|":
               resultado = this.or(b, a);
               break;
@@ -475,7 +523,7 @@ export class ResultadoPage implements OnInit {
             case "⊕":
               resultado = this.xor(b, a);
               break;
-          }
+          } */
         }
         if (c === "!") {
           resultado = this.not(a);
@@ -483,6 +531,7 @@ export class ResultadoPage implements OnInit {
 
         pila.push(resultado);
         this.proceso[iAux].tabla.push(resultado);
+
         iAux += 1;
       } else {
         pila.push(c);

@@ -52,13 +52,13 @@
     <br>
     <i>La proposición es una <b>{{diagnostico}}</b></i>
     <br>
-    <ion-item text-center>
-      <ion-label><b><i>F</i> = {{infijaOrg}}</b></ion-label>
+    <ion-item class="ion-text-center">
+      <ion-label><b>{{infijaOrg}}</b></ion-label>
     </ion-item>
 
 
 
-    <ion-grid fixed text-center>
+    <ion-grid fixed class="ion-text-center">
 
       <ion-row>
         <ion-col size="12">
@@ -74,7 +74,7 @@
       <table>
         <thead>
           <th *ngFor="let variable of variables">{{variable}}</th>
-          <th>F</th>
+          <th style="font-size: 0.7em;">Resultado</th>
         </thead>
         <tbody>
           <tr *ngFor="let fila of tabla">
@@ -85,7 +85,7 @@
 
 
 
-      <ion-row>
+      <ion-row *ngIf="proceso.length > 1">
         <ion-col size="12">
           <br><br>
           <ion-chip class="ion-text-center"
@@ -107,16 +107,23 @@
 
 
 
-    <div *ngIf="mostrarProceso">
+    <div *ngIf="mostrarProceso ">
 
-      <ion-grid fixed text-center *ngFor="let p of proceso;let i=index">
+      <ion-grid fixed class="ion-text-center" *ngFor="let p of proceso;let i=index">
+        <i style="font-size: 0.8em;">Paso {{i+1}}</i>
         <table size="12">
+
           <thead>
-            <th><i>F</i><sub>{{i+1}}</sub> = <b> {{normalize(p.exp)}}</b></th>
+            <th *ngFor="let operando of p.operandos">
+              {{ operando }}
+            </th>
+            <th> <b> {{normalize(p.exp)}}</b></th>
           </thead>
           <tbody>
             <tr *ngFor="let v of p.tabla;let i = index">
-              <td>f<sub>{{i+1}}</sub> {{checkChange01(v)}}</td>
+              <td>1</td>
+              <td *ngIf="p.operandos.length == 2">1</td>
+              <td> {{checkChange01(v)}}</td>
             </tr>
           </tbody>
         </table>

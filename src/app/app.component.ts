@@ -25,8 +25,8 @@ export class AppComponent {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
       this.statusBar.hide();
-      this.mostrarBanner();
-      this.mostrarVideo();
+      //this.mostrarBanner();
+      //this.mostrarVideo();
     });
   }
 

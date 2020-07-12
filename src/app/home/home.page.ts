@@ -56,8 +56,8 @@ export class HomePage implements OnInit, AfterViewInit {
       isTesting: false,
       autoShow: true,
     };
-    this.admobFree.banner.config(bannerConfig);
-    this.admobFree.rewardVideo.config(videoConfig);
+    //this.admobFree.banner.config(bannerConfig);
+    //this.admobFree.rewardVideo.config(videoConfig);
 
 
     // this.pushAdmob();
@@ -86,6 +86,7 @@ export class HomePage implements OnInit, AfterViewInit {
   infija: string = "";
   infijaOrg: string = "";
   infijaAux: string = "";
+  indexPuntero = 0;
 
   variables: string[] = [];
   operadores: string = "!&|()⇔⇒⊼⊻↓⊕";
