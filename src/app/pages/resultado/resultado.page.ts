@@ -69,8 +69,9 @@ export class ResultadoPage implements OnInit {
   infijaAux: string = "";
   diccionarioOperaciones = {};
   variables: string[] = [];
-  operadores: string = "!&|()⇔⇒⊼⊻↓⊕";
-  opr2var: string = "|&⇔⇒⊼⊻↓⊕";
+  operadores: string = "∨∧¬!&|()⇔⇒⊼⊻↓⊕";
+
+  opr2var: string = "∨∧⇔⇒⊼⊻↓⊕|&";
   varMays: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   varNames: string = this.varMays + this.varMays.toLowerCase();
   tabla: any = [];
@@ -258,14 +259,17 @@ export class ResultadoPage implements OnInit {
     this.infija = this.check(this.infija);
     this.infijaAux = this.infija;
     let prec = {};
-
+    // "∨∧¬!&|()⇔⇒⊼⊻↓⊕"
     prec["!"] = 9;
+    prec["¬"] = 9;
     prec["⊼"] = 8;
     prec["⊻"] = 7;
     prec["⊕"] = 6;
     prec["↓"] = 5;
     prec["&"] = 4;
+    prec["∧"] = 4;
     prec["|"] = 3;
+    prec["∨"] = 3;
     prec["⇒"] = 2;
     prec["⇔"] = 1;
     prec["("] = 0;
@@ -340,6 +344,8 @@ export class ResultadoPage implements OnInit {
     for (const c of postfija) {
       let cantidadOpers = 1;
       let oper = "";
+      let htmlOper = "";
+      let nombre = "";
       let b;
       if (this.operadores.includes(c)) {
         // Evaluar
@@ -348,11 +354,36 @@ export class ResultadoPage implements OnInit {
           cantidadOpers = 2;
           b = pila.pop();
           let operator = this.opr2var[this.opr2var.indexOf(c)];
+          if (["|", "∨"].includes(c)) {
+            nombre = `Disyunción`;
+          }
+          else if (["&", "∧"].includes(c)) {
+            nombre = `Conjunción`;
+          }
+          else if (["⇒"].includes(c)) {
+            nombre = `Condicional/Implicación`;
+          }
+          else if (["⇔"].includes(c)) {
+            nombre = `Bicondicional/Doble implicación`;
+          }
+          else if (["↓"].includes(c)) {
+            nombre = "NOR";
+          }
+          else if (["⊼"].includes(c)) {
+            nombre = "NAND";
+          }
+
+          else if (["⊻", "⊕"].includes(c)) {
+            nombre = "XOR";
+          }
+          htmlOper = ` ${b}<span class="operador-chido"> ${operator} </span>${a}`;
           oper = b + operator + a;
         }
 
-        if (c === "!") {
-          oper = "!" + a;
+        if (["!", "¬"].includes(c)) {
+          nombre = "Negación";
+          htmlOper = `<span class="operador-chido"> ${c} </span>${a}`;
+          oper = c + a;
         }
         let aux = oper;
 
@@ -371,15 +402,13 @@ export class ResultadoPage implements OnInit {
           this.diccionarioOperaciones[b] = [];
         }
 
-        if (!this.diccionarioOperaciones[oper]) {
-          this.diccionarioOperaciones[oper] = [];
-        }
+
 
 
         if (cantidadOpers === 2) {
-          this.proceso.push({ operandos: [a, b], exp: oper, tabla: [] });
+          this.proceso.push({ nombre, operandos: [b, a], exp: oper, html: htmlOper, tabla: [] });
         } else {
-          this.proceso.push({ operandos: [a], exp: oper, tabla: [] });
+          this.proceso.push({ nombre, operandos: [a], exp: oper, html: htmlOper, tabla: [] });
         }
       } else {
         pila.push(c);
@@ -394,9 +423,10 @@ export class ResultadoPage implements OnInit {
   generarTabla() {
     this.tabla = [];
     this.getProceso(this.postfija);
-    console.log("Diccionario de operaciones");
-    console.log(this.diccionarioOperaciones);
+    // console.log("Diccionario de operaciones");
+    // console.log(this.diccionarioOperaciones);
     for (const caracter of this.postfija) {
+
       if (!this.operadores.includes(caracter) && !this.variables.includes(caracter)) {
         this.variables.push(caracter);
       }
@@ -409,7 +439,7 @@ export class ResultadoPage implements OnInit {
     for (let i = nCombinaciones - 1; i >= 0; i--) {
       let combinacion = this.nBits(i.toString(2), this.variables.length)
       let susChida = this.sustituir(combinacion, this.postfija);
-      console.log(susChida);
+      //console.log(susChida);
       let resultado = this.evaluar(susChida);
       if (resultado == 1) {
         cant1 += 1;
@@ -446,12 +476,12 @@ export class ResultadoPage implements OnInit {
 
   sustituir(combinacion, postfija) {
     let auxPost = postfija;
+
     for (const caracter of auxPost) {
       if (this.variables.includes(caracter)) {
         auxPost = this.replaceAll(auxPost, caracter, combinacion[this.variables.indexOf(caracter)]);
       }
     }
-
     return auxPost;
   }
 
@@ -473,6 +503,7 @@ export class ResultadoPage implements OnInit {
         // Evaluar
         let a = parseInt(pila.pop());
         let resultado;
+
         if (this.opr2var.includes(c)) {
           let b = parseInt(pila.pop());
           if (["|", "∨"].includes(c)) {
@@ -481,7 +512,7 @@ export class ResultadoPage implements OnInit {
           else if (["&", "∧"].includes(c)) {
             resultado = this.and(b, a);
           }
-          else if ("=>" === c) {
+          else if (["⇒"].includes(c)) {
             resultado = this.condicional(b, a);
           }
           else if (["⇔"].includes(c)) {
@@ -497,35 +528,9 @@ export class ResultadoPage implements OnInit {
           else if (["⊻", "⊕"].includes(c)) {
             resultado = this.xor(b, a);
           }
-          /* switch (c) {
-            case "|":
-              resultado = this.or(b, a);
-              break;
-            case "&":
-              resultado = this.and(b, a);
-              break;
-            case "⇒":
-              resultado = this.condicional(b, a);
-              break;
-            case "⇔":
-              resultado = this.bicondicional(b, a);
-              break;
-            case "↓":
-              resultado = this.nor(b, a);
-              break;
-            case "⊼":
-              resultado = this.nand(b, a);
-              break;
 
-            case "⊻":
-              resultado = this.xor(b, a);
-              break;
-            case "⊕":
-              resultado = this.xor(b, a);
-              break;
-          } */
         }
-        if (c === "!") {
+        if (["!", "¬"].includes(c)) {
           resultado = this.not(a);
         }
 
