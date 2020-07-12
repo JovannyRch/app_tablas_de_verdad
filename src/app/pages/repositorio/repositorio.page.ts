@@ -49,7 +49,7 @@ export class RepositorioPage implements OnInit {
         )
         this.cargando = false;
         this.hayInternet = true;
-        console.log(this.expresiones);
+        //console.log(this.expresiones);
 
       }
     );

@@ -4,6 +4,8 @@ import { Storage } from '@ionic/storage';
 import { ToastController, Platform, NavController } from '@ionic/angular';
 
 import { RepositorioService } from "../../services/repositorio.service";
+
+import { AdMobFree, AdMobFreeBannerConfig } from '@ionic-native/admob-free/ngx';
 @Component({
   selector: 'app-resultado',
   templateUrl: './resultado.page.html',
@@ -15,6 +17,7 @@ export class ResultadoPage implements OnInit {
     private activeRoute: ActivatedRoute,
     private storage: Storage,
     public toastController: ToastController,
+    private admobFree: AdMobFree,
 
     private navCtrl: NavController,
     private repositorio: RepositorioService,
@@ -38,7 +41,28 @@ export class ResultadoPage implements OnInit {
         this.storage.set('expresiones', this.expresionesGuardadas);
       }
     });
+
+    /* const bannerConfig: AdMobFreeBannerConfig = {
+      id: 'ca-app-pub-4665787383933447/6762703339',
+      isTesting: false,
+      autoShow: true,
+    }; */
+    const videoConfig: AdMobFreeBannerConfig = {
+      id: 'ca-app-pub-4665787383933447/1334937592',
+      isTesting: false,
+      autoShow: true,
+    };
+    this.admobFree.rewardVideo.config(videoConfig);
+    //this.admobFree.banner.config(bannerConfig);
   }
+
+  mostrarVideo() {
+    this.admobFree.rewardVideo.prepare()
+      .then(() => {
+        this.admobFree.rewardVideo.show();
+      });
+  }
+
 
   activarGuardarEnNube() {
     this.guardarEnNube = !this.guardarEnNube;
@@ -387,20 +411,30 @@ export class ResultadoPage implements OnInit {
           oper = c + a;
         }
         let aux = oper;
-
-        if (this.checkParentesis(aux)) {
-
-          pila.push("(" + oper + ")");
-        }
-        else {
-          pila.push(oper);
-        }
         if (a) {
           this.historialOperaciones.push(a);
         }
         if (b) {
           this.historialOperaciones.push(b);
         }
+        if (this.checkParentesis(aux)) {
+
+          pila.push("(" + oper + ")");
+          if ("(" + oper + ")" && !this.diccionarioOperaciones["(" + oper + ")"]) {
+            this.diccionarioOperaciones["(" + oper + ")"] = [];
+            this.keysOperaciones.push("(" + oper + ")");
+          }
+          this.historialOperaciones.push("(" + oper + ")");
+        }
+        else {
+          pila.push(oper);
+          if (oper && !this.diccionarioOperaciones[oper]) {
+            this.diccionarioOperaciones[oper] = [];
+            this.keysOperaciones.push(oper);
+          }
+          this.historialOperaciones.push(oper);
+        }
+
 
         if (a && !this.diccionarioOperaciones[a]) {
           this.diccionarioOperaciones[a] = [];
@@ -411,6 +445,7 @@ export class ResultadoPage implements OnInit {
           this.diccionarioOperaciones[b] = [];
           this.keysOperaciones.push(b);
         }
+
 
 
 
@@ -433,13 +468,12 @@ export class ResultadoPage implements OnInit {
   generarTabla() {
     this.tabla = [];
     this.getProceso(this.postfija);
-    console.log("historial de operaciones");
-    console.log(this.historialOperaciones);
-    console.log("Diccionario de operaciones");
-    console.log(this.diccionarioOperaciones);
-    console.log(this.keysOperaciones);
+    /*  console.log("historial de operaciones");
+     console.log(this.historialOperaciones);
+     console.log("Diccionario de operaciones");
+     console.log(this.diccionarioOperaciones); */
+    //console.log(this.keysOperaciones);
     for (const caracter of this.postfija) {
-
       if (!this.operadores.includes(caracter) && !this.variables.includes(caracter)) {
         this.variables.push(caracter);
       }
@@ -509,7 +543,7 @@ export class ResultadoPage implements OnInit {
 
   evaluar(expresion: string) {
     let pila = [];
-    console.log("Expresion", expresion);
+    //console.log("Expresion", expresion);
     let iAux = 0;
     let keyCounter = 0;
     let historialLocal = [];
@@ -519,22 +553,25 @@ export class ResultadoPage implements OnInit {
       if (this.operadores.includes(c)) {
         // Evaluar
         let a = parseInt(pila.pop());
-        if (!historialLocal.includes(this.historialOperaciones[keyCounter])) {
+        if (keyCounter < this.historialOperaciones.length && !historialLocal.includes(this.historialOperaciones[keyCounter])) {
           historialLocal.push(this.historialOperaciones[keyCounter]);
+          // console.log("Poner un", a, "en", this.historialOperaciones[keyCounter], "index", keyCounter);
           this.diccionarioOperaciones[this.historialOperaciones[keyCounter]].push(a);
-          keyCounter++;
         }
+        keyCounter++;
 
 
         let resultado;
 
         if (this.opr2var.includes(c)) {
           let b = parseInt(pila.pop());
-          if (!historialLocal.includes(this.historialOperaciones[keyCounter])) {
+          if (keyCounter < this.historialOperaciones.length && !historialLocal.includes(this.historialOperaciones[keyCounter])) {
             historialLocal.push(this.historialOperaciones[keyCounter]);
+            // console.log("Poner un", b, "en", this.historialOperaciones[keyCounter], "index", keyCounter);
             this.diccionarioOperaciones[this.historialOperaciones[keyCounter]].push(b);
-            keyCounter++;
+
           }
+          keyCounter++;
 
           if (["|", "∨"].includes(c)) {
 
@@ -565,8 +602,19 @@ export class ResultadoPage implements OnInit {
         }
 
         pila.push(resultado);
-        //keyCounter += 1;
-        //keyCounter -= 1;
+        //console.log("Current index", keyCounter);
+        //console.log("Mmmmm....", this.historialOperaciones[keyCounter]);
+        if (keyCounter < this.historialOperaciones.length && !historialLocal.includes(this.historialOperaciones[keyCounter])) {
+          historialLocal.push(this.historialOperaciones[keyCounter]);
+          //console.log("Poner un", resultado, "en", this.historialOperaciones[keyCounter], "index", keyCounter);
+          this.diccionarioOperaciones[this.historialOperaciones[keyCounter]].push(resultado);
+          keyCounter++;
+        }
+        else {
+          //console.log("no entra");
+          keyCounter++;
+
+        }
 
         this.proceso[iAux].tabla.push(resultado);
 

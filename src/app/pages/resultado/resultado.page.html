@@ -92,7 +92,7 @@
             style="border-radius: 10px; border: 1px solid rgb(221, 109, 44); padding-left: 3%;"
             (click)="fMostrarProceso()" color="vibrant">
             <ion-label class="ion-text-center">
-              <span *ngIf="!mostrarProceso">Mostrar proceso</span>
+              <span *ngIf="!mostrarProceso" (click)="mostrarVideo()">Mostrar proceso</span>
               <span *ngIf="mostrarProceso">Ocultar proceso</span>
             </ion-label>
           </ion-chip>
