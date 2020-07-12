@@ -34,10 +34,12 @@
     "cordova-android": "8.1.0",
     "cordova-plugin-admob-free": "^0.27.0",
     "cordova-plugin-app-version": "^0.1.9",
+    "cordova-plugin-x-socialsharing": "^5.6.8",
     "cordova-promise-polyfill": "0.0.2",
     "cordova-sqlite-storage": "^3.3.0",
     "core-js": "^2.5.4",
     "dom-to-image": "^2.6.0",
+    "es6-promise-plugin": "^4.2.2",
     "firebase": "^7.6.0",
     "rxjs": "~6.5.1",
     "tslib": "^1.9.0",
@@ -91,6 +93,9 @@
       "cordova-plugin-app-version": {},
       "cordova-plugin-admob-free": {
         "ADMOB_APP_ID": "ca-app-pub-4665787383933447~4689744776"
+      },
+      "cordova-plugin-x-socialsharing": {
+        "ANDROID_SUPPORT_V4_VERSION": "24.1.1+"
       }
     },
     "platforms": [

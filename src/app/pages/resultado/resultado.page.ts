@@ -4,8 +4,12 @@ import { Storage } from '@ionic/storage';
 import { ToastController, Platform, NavController } from '@ionic/angular';
 
 import { RepositorioService } from "../../services/repositorio.service";
-
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdMobFree, AdMobFreeBannerConfig } from '@ionic-native/admob-free/ngx';
+import { Kmap } from './kmaps';
+
+import * as domtoimage from 'dom-to-image';
+
 @Component({
   selector: 'app-resultado',
   templateUrl: './resultado.page.html',
@@ -21,6 +25,7 @@ export class ResultadoPage implements OnInit {
 
     private navCtrl: NavController,
     private repositorio: RepositorioService,
+    private sanitizer: DomSanitizer,
   ) { }
 
   expresion: any;
@@ -96,10 +101,18 @@ export class ResultadoPage implements OnInit {
   keysOperaciones = [];
   variables: string[] = [];
   operadores: string = "∨∧¬!&|()⇔⇒⊼⊻↓⊕";
+  simplificacion: string = "";
+  suma: string = "";
+  multiplicacion: string = "";
+  miniterminos: number[] = [];
+  maxiterminos: number[] = [];
 
   opr2var: string = "∨∧⇔⇒⊼⊻↓⊕|&";
   varMays: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   varNames: string = this.varMays + this.varMays.toLowerCase();
+  notOperator: string = "";
+  andOperator: string = "";
+  orOperator: string = "";
   tabla: any = [];
 
   diagnostico: string = "";
@@ -490,12 +503,13 @@ export class ResultadoPage implements OnInit {
       let resultado = this.evaluar(susChida);
       if (resultado == 1) {
         cant1 += 1;
+        this.miniterminos.push(i);
       }
 
       if (resultado == 0) {
+        this.maxiterminos.push(i);
         cant0 += 1;
       }
-
       this.tabla.push((combinacion + resultado).split(""));
     }
 
@@ -511,6 +525,11 @@ export class ResultadoPage implements OnInit {
       this.diagnostico = "Contingencia";
     }
 
+    let kmap = new Kmap(this.miniterminos, this.variables);
+    let kmap2 = new Kmap(this.maxiterminos, this.variables);
+    //kmap.reduce();
+    this.suma = kmap.suma;
+    this.multiplicacion = kmap2.multiplicacion;
     /*  if (this.modo == 2) {
        this.infija = this.replaceAll(this.infija, "&", "∧");
        this.infija = this.replaceAll(this.infija, "|", "∨");
@@ -574,10 +593,11 @@ export class ResultadoPage implements OnInit {
           keyCounter++;
 
           if (["|", "∨"].includes(c)) {
-
+            if (!this.orOperator) this.orOperator = c;
             resultado = this.or(b, a);
           }
           else if (["&", "∧"].includes(c)) {
+            if (!this.andOperator) this.andOperator = c;
             resultado = this.and(b, a);
           }
           else if (["⇒"].includes(c)) {
@@ -598,6 +618,7 @@ export class ResultadoPage implements OnInit {
 
         }
         if (["!", "¬"].includes(c)) {
+          if (!this.notOperator) this.notOperator = c;
           resultado = this.not(a);
         }
 
@@ -721,5 +742,9 @@ export class ResultadoPage implements OnInit {
     return strTime;
   }
 
+
+  safeHtml(text: string) {
+    return this.sanitizer.bypassSecurityTrustHtml(text);
+  }
 
 }

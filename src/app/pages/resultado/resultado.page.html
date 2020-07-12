@@ -83,7 +83,14 @@
         </tbody>
       </table>
 
-
+      <br />
+      <i><small>Proposiciones equivalentes</small></i>
+      <ion-item>
+        <ion-label class="ion-text-center"><b>{{ suma }}</b></ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label class="ion-text-center"><b>{{ multiplicacion }}</b></ion-label>
+      </ion-item>
 
       <ion-row>
         <ion-col size="12">
@@ -117,7 +124,7 @@
             <th *ngFor="let operando of p.operandos">
               {{ operando }}
             </th>
-            <th> <b [innerHtml]="p.html"></b></th>
+            <th> <b [innerHtml]="safeHtml(p.html)"></b></th>
           </thead>
           <tbody>
             <tr *ngFor="let v of p.tabla;let i = index">
