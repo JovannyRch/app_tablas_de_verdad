@@ -162,6 +162,8 @@ export class HomePage implements OnInit, AfterViewInit {
     { 1: "X", 0: "x" },
     { 1: "Y", 0: "y" },
     { 1: "Z", 0: "z" },
+    { 1: "1", 0: "1" },
+    { 1: "0", 0: "0" },
   ];
 
   //bandera para saber si una expresion es correcta

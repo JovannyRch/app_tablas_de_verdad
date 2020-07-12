@@ -68,6 +68,8 @@ export class ResultadoPage implements OnInit {
   infijaOrg: string = "";
   infijaAux: string = "";
   diccionarioOperaciones = {};
+  historialOperaciones = [];
+  keysOperaciones = [];
   variables: string[] = [];
   operadores: string = "∨∧¬!&|()⇔⇒⊼⊻↓⊕";
 
@@ -292,8 +294,6 @@ export class ResultadoPage implements OnInit {
           postfixList.push(topToken);
           topToken = opStack.pop();
         }
-
-
       } else {
 
         while (opStack.length != 0 && (prec[opStack[opStack.length - 1]] > prec[caracter])) {
@@ -341,6 +341,7 @@ export class ResultadoPage implements OnInit {
   getProceso(postfija: string) {
     let pila = [];
     this.proceso = [];
+    this.historialOperaciones = [];
     for (const c of postfija) {
       let cantidadOpers = 1;
       let oper = "";
@@ -394,12 +395,21 @@ export class ResultadoPage implements OnInit {
         else {
           pila.push(oper);
         }
-        if (!this.diccionarioOperaciones[a]) {
-          this.diccionarioOperaciones[a] = [];
+        if (a) {
+          this.historialOperaciones.push(a);
+        }
+        if (b) {
+          this.historialOperaciones.push(b);
         }
 
-        if (!this.diccionarioOperaciones[b]) {
+        if (a && !this.diccionarioOperaciones[a]) {
+          this.diccionarioOperaciones[a] = [];
+          this.keysOperaciones.push(a);
+        }
+
+        if (b && !this.diccionarioOperaciones[b]) {
           this.diccionarioOperaciones[b] = [];
+          this.keysOperaciones.push(b);
         }
 
 
@@ -423,8 +433,11 @@ export class ResultadoPage implements OnInit {
   generarTabla() {
     this.tabla = [];
     this.getProceso(this.postfija);
-    // console.log("Diccionario de operaciones");
-    // console.log(this.diccionarioOperaciones);
+    console.log("historial de operaciones");
+    console.log(this.historialOperaciones);
+    console.log("Diccionario de operaciones");
+    console.log(this.diccionarioOperaciones);
+    console.log(this.keysOperaciones);
     for (const caracter of this.postfija) {
 
       if (!this.operadores.includes(caracter) && !this.variables.includes(caracter)) {
@@ -476,9 +489,11 @@ export class ResultadoPage implements OnInit {
 
   sustituir(combinacion, postfija) {
     let auxPost = postfija;
-
     for (const caracter of auxPost) {
-      if (this.variables.includes(caracter)) {
+      if (caracter == "1" || caracter == "0") {
+        continue;
+      }
+      else if (this.variables.includes(caracter)) {
         auxPost = this.replaceAll(auxPost, caracter, combinacion[this.variables.indexOf(caracter)]);
       }
     }
@@ -494,19 +509,35 @@ export class ResultadoPage implements OnInit {
 
   evaluar(expresion: string) {
     let pila = [];
-
+    console.log("Expresion", expresion);
     let iAux = 0;
+    let keyCounter = 0;
+    let historialLocal = [];
     for (let i = 0; i < expresion.length; i++) {
       let c = expresion[i];
 
       if (this.operadores.includes(c)) {
         // Evaluar
         let a = parseInt(pila.pop());
+        if (!historialLocal.includes(this.historialOperaciones[keyCounter])) {
+          historialLocal.push(this.historialOperaciones[keyCounter]);
+          this.diccionarioOperaciones[this.historialOperaciones[keyCounter]].push(a);
+          keyCounter++;
+        }
+
+
         let resultado;
 
         if (this.opr2var.includes(c)) {
           let b = parseInt(pila.pop());
+          if (!historialLocal.includes(this.historialOperaciones[keyCounter])) {
+            historialLocal.push(this.historialOperaciones[keyCounter]);
+            this.diccionarioOperaciones[this.historialOperaciones[keyCounter]].push(b);
+            keyCounter++;
+          }
+
           if (["|", "∨"].includes(c)) {
+
             resultado = this.or(b, a);
           }
           else if (["&", "∧"].includes(c)) {
@@ -524,7 +555,6 @@ export class ResultadoPage implements OnInit {
           else if (["⊼"].includes(c)) {
             resultado = this.nand(b, a);
           }
-
           else if (["⊻", "⊕"].includes(c)) {
             resultado = this.xor(b, a);
           }
@@ -535,6 +565,9 @@ export class ResultadoPage implements OnInit {
         }
 
         pila.push(resultado);
+        //keyCounter += 1;
+        //keyCounter -= 1;
+
         this.proceso[iAux].tabla.push(resultado);
 
         iAux += 1;

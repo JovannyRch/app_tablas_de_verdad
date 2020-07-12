@@ -121,8 +121,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let v of p.tabla;let i = index">
-              <td>1</td>
-              <td *ngIf="p.operandos.length == 2">1</td>
+              <td>
+                {{ checkChange01(diccionarioOperaciones[p.operandos[0]][i]) }}
+              </td>
+              <td *ngIf="p.operandos.length == 2">
+                {{ checkChange01(diccionarioOperaciones[p.operandos[1]][i]) }}
+              </td>
               <td> {{checkChange01(v)}}</td>
             </tr>
           </tbody>
