@@ -7,6 +7,7 @@ import { RepositorioService } from "../../services/repositorio.service";
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdMobFree, AdMobFreeBannerConfig } from '@ionic-native/admob-free/ngx';
 import { Kmap } from './kmaps';
+//import html2canvas from 'html2canvas';
 
 import * as domtoimage from 'dom-to-image';
 
@@ -525,11 +526,16 @@ export class ResultadoPage implements OnInit {
       this.diagnostico = "Contingencia";
     }
 
-    let kmap = new Kmap(this.miniterminos, this.variables);
-    let kmap2 = new Kmap(this.maxiterminos, this.variables);
-    //kmap.reduce();
-    this.suma = kmap.suma;
-    this.multiplicacion = kmap2.multiplicacion;
+
+    if (this.miniterminos.length >= 2) {
+
+      let kmap = new Kmap(this.miniterminos, this.variables);
+      this.suma = kmap.suma;
+    }
+    /*  if (this.maxiterminos.length >= 1) {
+       let kmap2 = new Kmap(this.maxiterminos, this.variables);
+       this.multiplicacion = kmap2.multiplicacion;
+     } */
     /*  if (this.modo == 2) {
        this.infija = this.replaceAll(this.infija, "&", "∧");
        this.infija = this.replaceAll(this.infija, "|", "∨");

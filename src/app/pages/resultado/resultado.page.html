@@ -1,9 +1,9 @@
 <ion-content *ngIf="!guardarEnNube">
-  <div *ngIf="ok" class="ion-padding">
+  <div *ngIf="ok" class="ion-padding" id="solucion">
     <ion-item>
 
       <ion-chip (click)="regresar()" color="vibrant">
-        <ion-icon style="zoom:1.5;" name="arrow-round-back"></ion-icon>
+        <ion-icon style="zoom:1.5;" name="arrow-back-outline"></ion-icon>
       </ion-chip>
 
 
@@ -91,11 +91,11 @@
       </table>
 
       <br />
-      <i><small>Proposiciones equivalentes</small></i>
-      <ion-item>
+      <i *ngIf="suma || multiplicacion"><small>Proposición equivalente</small></i>
+      <ion-item *ngIf="suma">
         <ion-label class="ion-text-center"><b>{{ suma }}</b></ion-label>
       </ion-item>
-      <ion-item>
+      <ion-item *ngIf="multiplicacion">
         <ion-label class="ion-text-center"><b>{{ multiplicacion }}</b></ion-label>
       </ion-item>
 

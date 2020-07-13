@@ -25,7 +25,12 @@ export class Kmap {
         this.andOperator = and;
         this.variables2 = variables;
         // console.log("F=", this.f);
-        this.reduce();
+        //console.log("Variables 2", this.variables2);
+        //console.log(this.f);
+        if (this.f.length >= 1) {
+            //console.log("Reducir");
+            this.reduce();
+        }
 
     }
     reduce() {
@@ -264,6 +269,7 @@ export class Kmap {
     buildSuma(functions: any) {
         let aux = [];
         for (let f of functions) {
+            console.log("f", f);
             if (f.length > 1) {
                 aux.push(`(${f.join(this.andOperator)})`)
             }
@@ -277,8 +283,10 @@ export class Kmap {
     }
 
     buildMultiplicacion(functions: any) {
+        console.log(functions);
         let aux = [];
         for (let f of functions) {
+            console.log("f", f);
             if (f.length > 1) {
                 aux.push(`(${f.join(this.orOperator)})`)
             }
